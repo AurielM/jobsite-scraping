@@ -59,23 +59,38 @@ class JobScraper:
         # ^page registers as loaded when all the links aren't present^
 
         for job_title in self.button_job_title.all():
-            self.page.pause()
+            # self.page.pause()
+            # print('pausing..')
+            job_title.is_visible()
             job_title.click()
+            self.ensure_job_description_visible(job_title=job_title)
             self.remove_covering_boxes()
             for must_have in self.title_must_haves:
                 print(f'must have: {must_have}')
-                if must_have in job_title.inner_text(): # code breaking here
+                if must_have in job_title.inner_text():
                     print(f'must have: {must_have} is in job_title: {job_title.inner_text()}')
                     job_title.click()
                     self.remove_covering_boxes()
+                    self.ensure_job_description_visible(job_title=job_title)
                     for must_have1 in self.body_must_haves:
                         print(f'must have1: {must_have1}')
-                        if must_have1 in self.text_job_description.inner_text():
+                        if must_have1 in self.text_job_description.inner_text(): # code breaking here
                             print(f'must have1: {must_have} is in job_title: {self.text_job_description}')
                             print(f'job title: {job_title.inner_text()}\nURL: {self.button_job_title.url()}')
-                    self.page.pause()
+                    # self.page.pause()
                     break
 
+    def ensure_job_description_visible(self, job_title):
+        try:
+            self.text_job_description.wait_for(state='visible', timeout=5000)
+        except:
+            print(f'1) could not find {self.text_job_description}')
+            while self.text_job_description.is_hidden():
+                job_title.click()
+                try:
+                    self.text_job_description.wait_for(state='visible', timeout=5000)
+                except:
+                    print(f'2) could not find {self.text_job_description}')
 
 with sync_playwright() as playwright:
     JobScraper(playwright).run()
