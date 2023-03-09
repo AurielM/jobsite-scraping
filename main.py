@@ -25,7 +25,6 @@ class JobScraper:
         # search criteria
         self.title_must_haves = ["QA"]
         # self.title_should_have_one = ["developer", "software", "automation", "tester", "test", "engineer"]
-        self.body_must_haves = [" "]
         self.must_not_haves = ["intern"]
 
     def run(self):
@@ -67,10 +66,6 @@ class JobScraper:
                     print(f'- {job_title.inner_text()}: {self.page.url}\n')
                     self.remove_covering_boxes()
                     self.ensure_job_description_visible(job_title=job_title)
-                    for must_have1 in self.body_must_haves:
-                        if must_have1 in self.text_job_description.inner_text():
-                            print(f'- {job_title.inner_text()}: {self.page.url}\n')
-                    break
 
     def ensure_job_description_visible(self, job_title):
         try:
