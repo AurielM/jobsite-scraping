@@ -23,16 +23,16 @@ class JobScraper:
 
 
         # search criteria
-        self.title_must_haves = ["Junior"]
+        self.title_must_haves = ["QA"]
         # self.title_should_have_one = ["developer", "software", "automation", "tester", "test", "engineer"]
-        self.body_must_haves = ["python"]
+        self.body_must_haves = [" "]
         self.must_not_haves = ["intern"]
 
     def run(self):
 
         self.page.goto("https://uk.indeed.com/?r=us")
         self.remove_covering_boxes()
-        self.field_search.fill('junior software developer')
+        self.field_search.fill('junior QA tester')
         self.button_search.click()
 
         self.page.wait_for_load_state(state="networkidle")
@@ -57,27 +57,25 @@ class JobScraper:
     def job_title_scraping(self):
         self.button_job_title.nth(0).wait_for(state="visible")
         # ^page registers as loaded when all the links aren't present^
-
+        
+        print('\nJob_titles of potential relevance:\n')
         for job_title in self.button_job_title.all():
             self.ensure_job_description_visible(job_title=job_title)
             self.remove_covering_boxes()
             for must_have in self.title_must_haves:
-                print(f'must have: {must_have}')
                 if must_have in job_title.inner_text():
-                    print(f'must have: {must_have} is in job_title: {job_title.inner_text()}')
+                    print(f'- {job_title.inner_text()}: {self.page.url}\n')
                     self.remove_covering_boxes()
                     self.ensure_job_description_visible(job_title=job_title)
                     for must_have1 in self.body_must_haves:
-                        print(f'must have1: {must_have1}')
                         if must_have1 in self.text_job_description.inner_text():
-                            print(f'\nJob title: {self.text_job_description}\nURL: {self.button_job_title.url()}\n\n')
+                            print(f'\nJob title: {job_title.inner_text()}\nURL: {self.page.url}\n\n')
                     break
 
     def ensure_job_description_visible(self, job_title):
         try:
             self.text_job_description.wait_for(state='visible', timeout=5000)
         except:
-            print(f'\n1) could not find {self.text_job_description}. Opening a the next one..\n')
             while self.text_job_description.is_hidden():
                 job_title.click()
                 try:
