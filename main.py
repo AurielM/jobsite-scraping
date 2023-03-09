@@ -21,17 +21,19 @@ class JobScraper:
         self.button_job_title = self.page.locator("a.jcs-JobTitle")
         self.text_job_description = self.page.locator("div#jobDescriptionText")
 
+        self.next_page_button = self.page.locator("a[data-testid='pagination-page-next']")
+
 
         # search criteria
         self.title_must_haves = ["QA"]
         # self.title_should_have_one = ["developer", "software", "automation", "tester", "test", "engineer"]
-        self.must_not_haves = ["intern"]
+        self.must_not_haves = ["intern", "Night Shift"]
 
     def run(self):
 
         self.page.goto("https://uk.indeed.com/?r=us")
         self.remove_covering_boxes()
-        self.field_search.fill('junior QA tester')
+        self.field_search.fill('QA tester')
         self.button_search.click()
 
         self.page.wait_for_load_state(state="networkidle")
@@ -40,7 +42,11 @@ class JobScraper:
 
         self.remove_covering_boxes()
 
-        self.job_title_scraping()
+        self.jobs_available = True
+        while self.jobs_available:
+            self.job_title_scraping()
+            self.next_page()
+        
         print('Scraping complete')
         self.browser.close()
 
@@ -77,6 +83,16 @@ class JobScraper:
                     self.text_job_description.wait_for(state='visible', timeout=5000)
                 except:
                     print(f'Unable to display: {self.text_job_description} by clicking {job_title}.')
+
+    def next_page(self):
+        try:
+            self.next_page_button.wait_for(state='visible', timeout=5000)
+            print('Next paging')
+            self.next_page_button.click()
+        except:
+            print("No further pages to search")
+            self.jobs_available = False
+            return self.jobs_available
 
 with sync_playwright() as playwright:
     JobScraper(playwright).run()
