@@ -1,0 +1,30 @@
+Plan:
+
+var1 = [must-have words]
+var2 = [must-not-have words]
+search-term = []
+
+
+open browser
+go to page
+login
+input search search-term[0] (increment with each scrape)
+terminal output of search-term and results:
+	job title - link (structure)
+
+
+Notes:
+
+id:
+div#my_idetifier
+
+class:
+div.my_class
+
+role:
+div[role=my_role]
+div[custom_attribute='my role']
+
+
+page.locator("div[custom_attribute='my role']")
+page.get_by_role("role_attribute_value")
