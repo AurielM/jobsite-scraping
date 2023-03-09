@@ -21,18 +21,19 @@ class JobScraper:
         self.button_job_title = self.page.locator("a.jcs-JobTitle")
         self.text_job_description = self.page.locator("div#jobDescriptionText")
 
+        self.next_page_button = self.page.locator("a[data-testid='pagination-page-next']")
+
 
         # search criteria
         self.title_must_haves = ["QA"]
         # self.title_should_have_one = ["developer", "software", "automation", "tester", "test", "engineer"]
-        self.body_must_haves = [" "]
-        self.must_not_haves = ["intern"]
+        self.must_not_haves = ["intern", "Night Shift"]
 
     def run(self):
 
         self.page.goto("https://uk.indeed.com/?r=us")
         self.remove_covering_boxes()
-        self.field_search.fill('junior QA tester')
+        self.field_search.fill('QA tester')
         self.button_search.click()
 
         self.page.wait_for_load_state(state="networkidle")
@@ -41,7 +42,11 @@ class JobScraper:
 
         self.remove_covering_boxes()
 
-        self.job_title_scraping()
+        self.jobs_available = True
+        while self.jobs_available:
+            self.job_title_scraping()
+            self.next_page()
+        
         print('Scraping complete')
         self.browser.close()
 
@@ -67,10 +72,6 @@ class JobScraper:
                     print(f'- {job_title.inner_text()}: {self.page.url}\n')
                     self.remove_covering_boxes()
                     self.ensure_job_description_visible(job_title=job_title)
-                    for must_have1 in self.body_must_haves:
-                        if must_have1 in self.text_job_description.inner_text():
-                            print(f'\nJob title: {job_title.inner_text()}\nURL: {self.page.url}\n\n')
-                    break
 
     def ensure_job_description_visible(self, job_title):
         try:
@@ -82,6 +83,16 @@ class JobScraper:
                     self.text_job_description.wait_for(state='visible', timeout=5000)
                 except:
                     print(f'Unable to display: {self.text_job_description} by clicking {job_title}.')
+
+    def next_page(self):
+        try:
+            self.next_page_button.wait_for(state='visible', timeout=5000)
+            print('Next paging')
+            self.next_page_button.click()
+        except:
+            print("No further pages to search")
+            self.jobs_available = False
+            return self.jobs_available
 
 with sync_playwright() as playwright:
     JobScraper(playwright).run()
